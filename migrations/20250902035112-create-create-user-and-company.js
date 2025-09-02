@@ -222,11 +222,6 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE'
         },
-        primary: {
-          type: Sequelize.BOOLEAN,
-          allowNull: false,
-          defaultValue: false
-        },
         createdAt: {
           allowNull: false,
           type: Sequelize.DATE,
@@ -236,6 +231,10 @@ module.exports = {
           allowNull: false,
           type: Sequelize.DATE,
           defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        },
+        deletedAt: {
+          allowNull: true,
+          type: Sequelize.DATE
         }
       }, {transaction: t});
 
@@ -275,6 +274,10 @@ module.exports = {
           allowNull: false,
           type: Sequelize.DATE,
           defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        },
+        deletedAt: {
+          allowNull: true,
+          type: Sequelize.DATE
         }
       }, {transaction: t});
 
