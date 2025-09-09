@@ -24,27 +24,27 @@ Address.init({
     allowNull: true
   },
   street: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(254),
     allowNull: false
   },
   number: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(10),
     allowNull: true
   },
   complement: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true
   },
   city: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false
   },
   state: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(2),
     allowNull: false
   },
   zipCode: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(8),
     allowNull: false
   },
   createdAt: {

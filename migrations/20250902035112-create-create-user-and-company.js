@@ -10,19 +10,19 @@ module.exports = {
           type: Sequelize.UUID
         },
         name: {
-          type: Sequelize.STRING,
-          allowNull: false
+          type: Sequelize.STRING(150),
+          allowNull: false,
         },
         cpf: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(11),
           allowNull: false
         },
         email: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(254),
           allowNull: false
         },
         password: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(60),
           allowNull: false
         },
         birthday: {
@@ -52,19 +52,19 @@ module.exports = {
           type: Sequelize.UUID
         },
         name: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(15),
           allowNull: false
         },
         cnpj: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(14),
           allowNull: false
         },
         email: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(254),
           allowNull: false
         },
         password: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(60),
           allowNull: false
         },
         createdAt: {
@@ -90,27 +90,27 @@ module.exports = {
           type: Sequelize.UUID
         },
         street: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(254),
           allowNull: false
         },
         number: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(10),
           allowNull: false
         },
         complement: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           allowNull: true
         },
         city: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           allowNull: false
         },
         state: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(2),
           allowNull: false
         },
         zipCode: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(8),
           allowNull: false
         },
         userUuid: {
@@ -178,11 +178,11 @@ module.exports = {
           type: Sequelize.UUID
         },
         areaCode: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(2),
           allowNull: true
         },
         number: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(9),
           allowNull: false
         },
         createdAt: {
@@ -290,7 +290,6 @@ module.exports = {
   },
   async down(queryInterface, Sequelize) {
     return queryInterface.sequelize.transaction(async (t) => {
-      await queryInterface.removeConstraint('address', 'check_eitherCompanyOrUser', {transaction: t});
       await queryInterface.removeConstraint('companyPhoneNumber', 'pk_companyPhoneNumber', {transaction: t});
       await queryInterface.dropTable('companyPhoneNumber', {transaction: t});
       await queryInterface.removeConstraint('userPhoneNumber', 'pk_userPhoneNumber', {transaction: t});
