@@ -20,27 +20,27 @@ Dog.init({
     type: DataTypes.UUID
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: false
   },
   gender: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('M', 'F'),
     allowNull: false
   },
   age: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: true
   },
   breed: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true
   },
   color: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: true
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(500),
     allowNull: true
   },
   createdAt: {

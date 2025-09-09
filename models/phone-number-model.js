@@ -16,16 +16,12 @@ PhoneNumber.init({
     type: DataTypes.UUID
   },
   areaCode: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(2),
     allowNull: true
   },
   number: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(9),
     allowNull: false
-  },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: true
   },
   createdAt: {
     allowNull: false,

@@ -1,13 +1,18 @@
 const {Sequelize, DataTypes, Model} = require('sequelize');
 const process = require('process');
+const bcrypt = require('bcrypt');
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 class Company extends Model {
-
+  password;
 }
+
+Company.prototype.validPassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 Company.init({
   uuid: {
@@ -49,7 +54,22 @@ Company.init({
   }
 }, {
   sequelize,
-  modelName: 'company'
+  modelName: 'company',
+  paranoid: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
 
 module.exports = Company;

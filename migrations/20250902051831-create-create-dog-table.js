@@ -10,27 +10,27 @@ module.exports = {
           type: Sequelize.UUID
         },
         name: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(50),
           allowNull: false
         },
         gender: {
-          type: Sequelize.STRING,
+          type: Sequelize.ENUM('M', 'F'),
           allowNull: false
         },
         age: {
-          type: Sequelize.STRING,
+          type: Sequelize.INTEGER,
           allowNull: true
         },
         breed: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(100),
           allowNull: true
         },
         color: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(50),
           allowNull: true
         },
         description: {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING(500),
           allowNull: true
         },
         createdAt: {
@@ -61,6 +61,7 @@ module.exports = {
       }, {transaction: t});
     });
   },
+
   async down(queryInterface, Sequelize) {
     return queryInterface.sequelize.transaction(async (t) => {
       await queryInterface.removeColumn('dog', 'companyUuid', {transaction: t});
