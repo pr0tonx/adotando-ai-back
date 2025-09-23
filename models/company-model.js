@@ -22,22 +22,23 @@ Company.init({
   },
   addressUuid: {
     type: DataTypes.UUID,
-    allowNull: true
+    allowNull: false,
+    unique: true
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(150),
     allowNull: false
   },
   cnpj: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(14),
     allowNull: false
   },
   email: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(254),
     allowNull: false
   },
   password: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(60),
     allowNull: false
   },
   createdAt: {

@@ -1,7 +1,7 @@
 const User = require('./user-model');
 const Company = require('./company-model');
 const Address = require('./address-model');
-const PhoneNumber = require('./phone-number-model');
+const PhoneNumber = require('./phoneNumber-model');
 const Dog = require('./dog-model');
 const Image = require('./image-model');
 const Adoption = require('./adoption-model');
@@ -11,19 +11,23 @@ User.belongsTo(Address, {
   as: 'address'
 });
 
-Address.belongsTo(User, {
-  foreignKey: 'userUuid',
-  as: 'user'
-});
-
-Company.belongsTo(Address, {
+Address.hasMany(User, {
   foreignKey: 'addressUuid',
   as: 'address'
 });
 
-Address.belongsTo(Company, {
-  foreignKey: 'companyUuid',
-  as: 'company'
+Company.belongsTo(Address, {
+  foreignKey: {
+    name: 'addressUuid',
+    as: 'address'
+  }
+});
+
+Address.hasOne(Company, {
+  foreignKey: {
+    name: 'addressUuid',
+    as: 'company'
+  }
 });
 
 User.belongsToMany(PhoneNumber, {

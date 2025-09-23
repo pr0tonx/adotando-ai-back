@@ -5,54 +5,29 @@ const config = require(__dirname + '/../config/config.json')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
-class Address extends Model {
+class PhoneNumber extends Model {
   static async create(values, options) {
     return await super.create({
       uuid: values.uuid,
-      street: values.street,
-      number: values['number'],
-      complement: values.complement,
-      city: values.city,
-      state: values.state,
-      zipCode: values.zipCode,
-      neighborhood: values.neighborhood
+      areaCode: values.areaCode,
+      phoneNumber: values.phoneNumber
     }, {transaction: options.transaction});
   }
 }
 
-Address.init({
+PhoneNumber.init({
   uuid: {
     allowNull: false,
     primaryKey: true,
     type: DataTypes.UUID
   },
-  street: {
-    type: DataTypes.STRING(254),
-    allowNull: false
-  },
-  number: {
-    type: DataTypes.STRING(10),
-    allowNull: true
-  },
-  complement: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  city: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  state: {
+  areaCode: {
     type: DataTypes.STRING(2),
-    allowNull: false
-  },
-  zipCode: {
-    type: DataTypes.STRING(8),
-    allowNull: false
-  },
-  neighborhood: {
-    type: DataTypes.STRING(100),
     allowNull: true
+  },
+  phoneNumber: {
+    type: DataTypes.STRING(9),
+    allowNull: false
   },
   createdAt: {
     allowNull: false,
@@ -68,8 +43,8 @@ Address.init({
   }
 }, {
   sequelize,
-  modelName: 'address',
+  modelName: 'phoneNumber',
   freezeTableName: true
 });
 
-module.exports = Address;
+module.exports = PhoneNumber;

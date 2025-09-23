@@ -1,18 +1,21 @@
 const express = require('express');
 const app = express();
-const port = 4200;
+const bodyParser = require('body-parser');
 
 const { testConnection } = require('./database/database');
+const routes = require('./routes/routes');
+const routeNotFoundHandler = require('./middlewares/routeNotFoundHandler');
 
-(async () => {
-  await testConnection();
-})();
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 
-app.get('/healthcheck', (req, res) => {
-  res.status(200).send();
-});
+const port = 4200;
 
+(async () => await testConnection())();
+
+app.get('/healthcheck', (req, res) => res.status(200).send());
+app.use('/api', routes);
+app.use(routeNotFoundHandler);
+
+app.listen(port, () => console.log(`Listening on port ${port}`));

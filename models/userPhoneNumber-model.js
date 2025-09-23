@@ -5,23 +5,30 @@ const config = require(__dirname + '/../config/config.json')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
-class PhoneNumber extends Model {
+class UserPhoneNumber extends Model {
 
+  static async create(values, options) {
+    return await super.create({
+      uuid: values.uuid,
+      userUuid: values.userUuid,
+      phoneNumberUuid: values.phoneNumberUuid
+    }, {transaction: options.transaction});
+  }
 }
 
-PhoneNumber.init({
+UserPhoneNumber.init({
   uuid: {
     allowNull: false,
     primaryKey: true,
     type: DataTypes.UUID
   },
-  areaCode: {
-    type: DataTypes.STRING(2),
-    allowNull: true
+  userUuid: {
+    allowNull: false,
+    type: DataTypes.UUID
   },
-  number: {
-    type: DataTypes.STRING(9),
-    allowNull: false
+  phoneNumberUuid: {
+    allowNull: false,
+    type: DataTypes.UUID
   },
   createdAt: {
     allowNull: false,
@@ -37,7 +44,8 @@ PhoneNumber.init({
   }
 }, {
   sequelize,
-  modelName: 'phoneNumber'
+  modelName: 'userPhoneNumber',
+  freezeTableName: true
 });
 
-module.exports = PhoneNumber;
+module.exports = UserPhoneNumber;
