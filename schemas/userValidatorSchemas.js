@@ -1,8 +1,10 @@
 const {body, query, param} = require('express-validator');
 
-const allowedFields = ['name', 'email', 'cpf', 'password', 'confirmPassword', 'birthday',
+const postAllowedFields = ['name', 'email', 'cpf', 'password', 'confirmPassword', 'birthday',
   'street', 'number', 'complement', 'neighborhood', 'city', 'zipCode', 'state',
   'phoneNumber', 'areaCode'];
+
+const getAllAllowedFields = ['all', 'limit', 'page'];
 
 const createUserSchema = [
   body('name').exists().withMessage('Name field is required.').bail()
@@ -74,7 +76,7 @@ const createUserSchema = [
     .matches(/^\d+$/).withMessage('Area code field must only contain numbers.'),
 
   body().custom(body => {
-    const extra = Object.keys(body).filter(key => !allowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !postAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
     return true;
   })
@@ -85,6 +87,24 @@ const getAllUsersSchema = [
     .custom(value => {
       if (value !== 'true' && value !== 'false') throw new Error('All query parameter must be either "true" or "false"');
       return true;
+    }),
+
+  query('limit').optional()
+    .custom(value => {
+      if (!value.match(/^\d+$/)) throw new Error('Limit query parameter must be a number');
+      return true;
+    }),
+
+  query('page').optional()
+    .custom(value => {
+      if (!value.match(/^\d+$/)) throw new Error('Page query parameter must be a number');
+      return true;
+    }),
+
+  query().custom(body => {
+    const extra = Object.keys(body).filter(key => !getAllAllowedFields.includes(key));
+    if (extra.length > 0) throw new Error(`The following query parameters are not allowed: ${extra.join(', ')}.`);
+    return true;
   })
 ];
 

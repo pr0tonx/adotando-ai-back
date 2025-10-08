@@ -6,104 +6,74 @@ const Dog = require('./dog-model');
 const Image = require('./image-model');
 const Adoption = require('./adoption-model');
 
-User.belongsTo(Address, {
-  foreignKey: 'addressUuid',
-  as: 'address'
-});
+User.belongsTo(Address, {as: 'address'});
+Address.hasMany(User);
 
-Address.hasMany(User, {
-  foreignKey: 'addressUuid',
-  as: 'address'
-});
+User.belongsToMany(PhoneNumber, {through: 'userPhoneNumber', as: 'phoneNumber'});
+PhoneNumber.belongsToMany(User, {through: 'userPhoneNumber'});
 
 Company.belongsTo(Address, {
-  foreignKey: {
-    name: 'addressUuid',
-    as: 'address'
-  }
+  foreignKey: 'addressUuid'
 });
 
 Address.hasOne(Company, {
   foreignKey: {
     name: 'addressUuid',
-    as: 'company'
+    as: 'addressToCompany'
   }
-});
-
-User.belongsToMany(PhoneNumber, {
-  through: 'userPhoneNumber',
-  foreignKey: 'userUuid',
-  otherKey: 'phoneNumberUuid',
-  as: 'phones'
-});
-
-PhoneNumber.belongsToMany(User, {
-  through: 'userPhoneNumber',
-  foreignKey: 'phoneNumberUuid',
-  otherKey: 'userUuid',
-  as: 'users'
 });
 
 Company.belongsToMany(PhoneNumber, {
   through: 'companyPhoneNumber',
   foreignKey: 'companyUuid',
   otherKey: 'phoneNumberUuid',
-  as: 'phones'
+  as: 'companyToPhoneNumber'
 });
 
 PhoneNumber.belongsToMany(Company, {
   through: 'companyPhoneNumber',
   foreignKey: 'phoneNumberUuid',
   otherKey: 'companyUuid',
-  as: 'companies'
+  as: 'phoneNumberToCompany'
 });
 
 Company.hasMany(Dog, {
   foreignKey: 'companyUuid',
-  as: 'dogs'
+  as: 'companyToDog'
 });
 
 Dog.belongsTo(Company, {
   foreignKey: 'companyUuid',
-  as: 'company'
+  as: 'dogToCompany'
 });
 
 Dog.hasMany(Image, {
   foreignKey: 'dogUuid',
-  as: 'images'
+  as: 'dogToImage'
 });
 
 Image.belongsTo(Dog, {
   foreignKey: 'dogUuid',
-  as: 'dog'
+  as: 'imageToDog'
 });
 
 User.hasMany(Adoption, {
   foreignKey: 'userUuid',
-  as: 'adoptions'
+  as: 'userToAdoption'
 });
 
 Adoption.belongsTo(User, {
   foreignKey: 'userUuid',
-  as: 'user'
+  as: 'adoptionToUser'
 });
 
 Dog.hasMany(Adoption, {
   foreignKey: 'dogUuid',
-  as: 'adoptions'
+  as: 'dogToAdoption'
 });
 
 Adoption.belongsTo(Dog, {
   foreignKey: 'dogUuid',
-  as: 'dog'
+  as: 'adoptionToDog'
 });
 
-module.exports = {
-  User,
-  Company,
-  Address,
-  PhoneNumber,
-  Dog,
-  Image,
-  Adoption
-};

@@ -1,11 +1,10 @@
-const {Sequelize, DataTypes, Model} = require('sequelize');
-const process = require('process');
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
-
+const {DataTypes, Model} = require('sequelize');
 const bcrypt = require('bcrypt');
 
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const {sequelize} = require('../database/database');
+
+const Address = require('./address-model');
+const PhoneNumber = require('./phoneNumber-model');
 
 class User extends Model {
   // password;
@@ -22,14 +21,77 @@ class User extends Model {
     }, {transaction: options.transaction});
   };
 
-  static async getAllUsers(all) {
-    return await super.findAll({
+  static async getAllUsers(all, limit, page) {
+    const {count, rows} = await super.findAndCountAll({
+      attributes: {
+        include: ['uuid', 'name', 'cpf', 'email', 'birthday'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt']
+      },
+      include: [
+        {
+          model: Address,
+          as: 'address',
+          attributes: {
+            include: ['uuid', 'street', 'number', 'complement', 'city', 'state', 'zipCode', 'neighborhood'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          }
+        },
+        {
+          model: PhoneNumber,
+          as: 'phoneNumber',
+          attributes: {
+            include: ['uuid', 'areaCode', 'phoneNumber'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          },
+          through: {attributes: []}
+        }
+      ],
+      limit,
+      offset: (page - 1) * limit,
       paranoid: all,
     });
+
+    const totalPages = Math.max(1, Math.ceil(count / limit));
+
+    return {
+      data: rows,
+      meta: {
+        totalResults: count,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   };
 
   static async getUserById(uuid) {
-    return await super.findByPk(uuid);
+    return await super.findOne({
+      where: {uuid},
+      attributes: {
+        include: ['uuid', 'name', 'cpf', 'email', 'birthday'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt']
+      },
+      include: [
+        {
+          model: Address,
+          as: 'address',
+          attributes: {
+            include: ['uuid', 'street', 'number', 'complement', 'city', 'state', 'zipCode', 'neighborhood'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          },
+        },
+        {
+          model: PhoneNumber,
+          as: 'phoneNumber',
+          attributes: {
+            include: ['uuid', 'areaCode', 'phoneNumber'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          },
+          through: {attributes: []}
+        }
+      ]
+    });
   };
 
   static async getUserByEmail(email) {

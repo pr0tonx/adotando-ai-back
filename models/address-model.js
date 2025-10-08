@@ -1,9 +1,5 @@
-const {Sequelize, DataTypes, Model} = require('sequelize');
-const process = require('process');
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
-
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const {DataTypes, Model} = require('sequelize');
+const {sequelize} = require('../database/database');
 
 class Address extends Model {
   static async create(values, options) {

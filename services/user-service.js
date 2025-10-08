@@ -1,8 +1,13 @@
 const uuid = require('uuid');
 
-const userModel = require('../models/user-model');
 const {sequelize} = require('../database/database');
+
 const ResponseFactory = require('../utils/ResponseFactory');
+
+const {sequelizeError} = require('../errors/sequelizeError');
+const userErrors = require('../errors/userErrors');
+
+const userModel = require('../models/user-model');
 
 const addressService = require('./address-service');
 const phoneNumberService = require('./phoneNumber-service');
@@ -11,113 +16,79 @@ const userPhoneNumberService = require('./userPhoneNumber-service');
 const createUser = async function (body) {
   const transaction = await sequelize.transaction();
 
-  const isEmailInUse = await userModel.getUserByEmail(body.user.email);
-  if (isEmailInUse) {
-    await transaction.rollback();
-    return new ResponseFactory().createError(
-      'CONFLICT',
-      'Email already already registered.',
+  try {
+    const addressResponse = await addressService.createAddress(body.address, {transaction});
+
+    const userResponse = await userModel.create({
+      uuid: uuid.v6(),
+      ...body.user,
+      addressUuid: addressResponse.uuid
+    }, transaction).then(({dataValues}) => dataValues);
+
+    const phoneNumberResponse = await phoneNumberService.createPhoneNumber(body.phoneNumber, {transaction});
+
+    await userPhoneNumberService.createUserPhoneNumber({
+      userUuid: userResponse.uuid,
+      phoneNumberUuid: phoneNumberResponse.uuid
+    }, {transaction});
+
+    await transaction.commit();
+
+    return new ResponseFactory().createSuccess(
+      'User created successfully',
       {
-        field: 'email',
-        rejectedValue: body.email,
-        rule: 'Email already already registered.'
+        uuid: userResponse.uuid,
+        name: userResponse.name,
+        cpf: userResponse.cpf,
+        email: userResponse.email,
+        password: userResponse.password,
+        birthday: userResponse.birthday,
+        address: addressResponse,
+        phoneNumber: phoneNumberResponse,
       },
-      409
+      200
     );
-  }
-
-  const cpfInUse = await userModel.getUserByCpf(body.user.cpf);
-  if (cpfInUse) {
+  } catch (err) {
     await transaction.rollback();
-    return new ResponseFactory().createError(
-      'CONFLICT',
-      'CPF already already registered.',
-      {
-        field: 'cpf',
-        rejectedValue: body.cpf,
-        rule: 'CPF already already registered.'
-      },
-      409
-    );
+
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      const field = err.errors[0].path;
+      const value = err.errors[0].value;
+
+      return userErrors.conflictError(field, value);
+    }
+
+    return sequelizeError(err);
   }
+};
 
-  const addressResponse = await addressService.createAddress(body.address, transaction);
-  if (addressResponse instanceof ResponseFactory) return addressResponse;
+const getAllUsers = async function (retrieveAll, limit, page) {
+  retrieveAll = !retrieveAll || retrieveAll === 'false';
+  limit = parseInt(limit) || 15;
+  page = parseInt(page) || 1;
 
-  const userRequest = {uuid: uuid.v6(), ...body.user, addressUuid: addressResponse.uuid}
-
-  const userResponse = (await userModel.create(userRequest, transaction)).dataValues;
-  if(!userResponse) {
-    await transaction.rollback();
-    return new ResponseFactory().createError(
-      'INTERNAL_SERVER_ERROR',
-      'An error occurred while creating the user.',
-      {},
-      500
-    );
-  }
-
-  const phoneNumberResponse = await phoneNumberService.createPhoneNumber(body.phoneNumber, transaction);
-  if (phoneNumberResponse instanceof ResponseFactory) return phoneNumberResponse;
-
-  const userPhoneNumberResponse = await userPhoneNumberService.createUserPhoneNumber({
-    userUuid: userResponse.uuid,
-    phoneNumberUuid: phoneNumberResponse.uuid
-  }, transaction);
-  if (userPhoneNumberResponse instanceof ResponseFactory) return userPhoneNumberResponse;
-
-  await transaction.commit();
+  const users = await userModel.getAllUsers(retrieveAll, limit, page)
+    .catch(err => sequelizeError(err));
 
   return new ResponseFactory().createSuccess(
-    'User created successfully',
-    {
-      uuid: userResponse.uuid,
-      name: userResponse.name,
-      cpf: userResponse.cpf,
-      email: userResponse.email,
-      password: userResponse.password,
-      birthday: userResponse.birthday,
-      address: addressResponse,
-      phoneNumber: phoneNumberResponse,
-    },
+    users.data.length === 0 ? 'No users found for this page.' : 'Users retrieved successfully',
+    {users: users.data.map(user => user.dataValues || {}), meta: users.meta},
     200
   );
-}
-
-const getAllUsers = async function (retrieveAll) {
-  const all = !retrieveAll || retrieveAll === 'false';
-
-  const users = await userModel.getAllUsers(all);
-
-  return new ResponseFactory().createSuccess(
-    'Users retrieved successfully',
-    users.map(user => user?.dataValues || {}),
-    200
-  );
-}
+};
 
 const getUserById = async function (uuid) {
-  const user = await userModel.getUserById(uuid);
+  const user = await userModel.getUserById(uuid)
+    .catch(err => sequelizeError(err));
 
-  if (!user) {
-    return new ResponseFactory().createError(
-      'NOT_FOUND',
-      'User not found.',
-      {
-        field: 'uuid',
-        rejectedValue: uuid,
-        rule: 'User not found.'
-      },
-      404
-    );
-  }
+  if (!user) return userErrors.userNotFoundError(uuid);
 
   return new ResponseFactory().createSuccess(
     'User retrieved successfully',
     user?.dataValues || {},
     200
   );
-}
+};
 
 // TODO
 const updateUser = async function (body) {
@@ -129,55 +100,33 @@ const updateUser = async function (body) {
     await transaction.commit();
     return user;
   } else await transaction.rollback();
-}
+};
 
 const deleteUser = async function (uuid) {
-  // !uuid vai cair em um middleware falando que não acha a rota DELETE /
-  const user = await userModel.deleteUser(uuid);
+  const user = await userModel.deleteUser(uuid)
+    .catch(err => sequelizeError(err));
 
-  if (!user) {
-    return new ResponseFactory().createError(
-      'NOT_FOUND',
-      'User not found.',
-      {
-        field: 'uuid',
-        rejectedValue: uuid,
-        rule: 'User not found.'
-      },
-      404
-    );
-  }
+  if (!user) return userErrors.userNotFoundError(uuid);
 
   return new ResponseFactory().createSuccess(
     'User deleted successfully',
     user?.dataValues || {},
     200
   );
-}
+};
 
 const reactivateUser = async function (uuid) {
-  // !uuid vai cair em um middleware falando que não acha a rota UPDATE /
-  const user = await userModel.reactivateUser(uuid);
+  const user = await userModel.reactivateUser(uuid)
+    .catch(err => sequelizeError(err));
 
-  if (!user) {
-    return new ResponseFactory().createError(
-      'NOT_FOUND',
-      'User not found.',
-      {
-        field: 'uuid',
-        rejectedValue: uuid,
-        rule: 'User not found.'
-      },
-      404
-    );
-  }
+  if (!user) return userErrors.userNotFoundError(uuid)
 
   return new ResponseFactory().createSuccess(
     'User reactivated successfully.',
     user?.dataValues || {},
     200
   );
-}
+};
 
 module.exports = {
   createUser,

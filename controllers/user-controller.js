@@ -31,23 +31,22 @@ const createUser = async function (req, res) {
 
 const getAllUsers = async function (req, res) {
   const retrieveAll = req.query.all
+  const limit = req.query.limit;
+  const page = req.query.page;
 
-  const response = await userService.getAllUsers(retrieveAll);
+  const response = await userService.getAllUsers(retrieveAll, limit, page);
 
   return res.status(response.status || 200).send(response);
 }
 
-// TODO
-const getUserById = async function (req, res, next) {
+const getUserById = async function (req, res) {
   const {uuid} = req.params;
 
   const response = await userService.getUserById(uuid);
 
-  res.response = response;
   res.status(response.status || 200).send(response);
 }
 
-// TODO
 const updateUser = async function (req, res) {
   try {
     const {uuid} = req.params;

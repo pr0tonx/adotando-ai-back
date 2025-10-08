@@ -2,10 +2,11 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
-const { testConnection } = require('./database/database');
+const {testConnection} = require('./database/database');
 const routes = require('./routes/routes');
 const routeNotFoundHandler = require('./middlewares/routeNotFoundHandler');
 
+require('./models/associations');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());

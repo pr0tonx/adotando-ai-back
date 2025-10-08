@@ -1,23 +1,11 @@
 const uuid = require('uuid');
 
-const {sequelize} = require('../database/database');
-const ResponseFactory = require('../utils/ResponseFactory');
 const userPhoneNumberModel = require('../models/userPhoneNumber-model');
+const {sequelizeError} = require('../errors/sequelizeError');
 
 const createUserPhoneNumber = async function (body, transaction) {
-  const request = {uuid: uuid.v6(), ...body};
-
-  const userPhoneNumber = await userPhoneNumberModel.create(request, transaction);
-
-  if (!userPhoneNumber) {
-    await transaction.rollback();
-    return new ResponseFactory().createError(
-      'INTERNAL_SERVER_ERROR',
-      'An error occurred while creating the address.',
-      {},
-      500
-    );
-  }
+  const userPhoneNumber = await userPhoneNumberModel.create({uuid: uuid.v6(), ...body}, {transaction})
+    .catch(err => sequelizeError(err));
 
   return userPhoneNumber.dataValues;
 }
