@@ -17,20 +17,20 @@ const createUser = async function (body) {
   const transaction = await sequelize.transaction();
 
   try {
-    const addressResponse = await addressService.createAddress(body.address, {transaction});
+    const addressResponse = await addressService.createAddress(body.address, transaction);
 
     const userResponse = await userModel.create({
       uuid: uuid.v6(),
       ...body.user,
       addressUuid: addressResponse.uuid
-    }, transaction).then(({dataValues}) => dataValues);
+    }, {transaction}).then(({dataValues}) => dataValues);
 
-    const phoneNumberResponse = await phoneNumberService.createPhoneNumber(body.phoneNumber, {transaction});
+    const phoneNumberResponse = await phoneNumberService.createPhoneNumber(body.phoneNumber, transaction);
 
     await userPhoneNumberService.createUserPhoneNumber({
       userUuid: userResponse.uuid,
       phoneNumberUuid: phoneNumberResponse.uuid
-    }, {transaction});
+    }, transaction);
 
     await transaction.commit();
 
