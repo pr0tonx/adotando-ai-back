@@ -19,7 +19,7 @@ const createUser = async function (body) {
   try {
     const addressResponse = await addressService.createAddress(body.address, transaction);
 
-    const userResponse = await userModel.create({
+    const userResponse = await userModel.createUser({
       uuid: uuid.v6(),
       ...body.user,
       addressUuid: addressResponse.uuid
@@ -90,17 +90,58 @@ const getUserById = async function (uuid) {
   );
 };
 
-// TODO
 const updateUser = async function (body) {
   const transaction = await sequelize.transaction();
 
-  const user = await userModel.updateUser(body, transaction);
+  try {
+    const user = await userModel.getUserById(body.uuid);
 
-  if (user) {
+    if (!user) return userErrors.userNotFoundError(uuid);
+
+    const addressResponse = await addressService.updateAddress({
+      uuid: user.addressUuid, currentAddress: user.address, newAddress: body.address
+    }, transaction);
+
+    if (addressResponse instanceof ResponseFactory) return addressResponse;
+
+    const phoneNumberResponse = await phoneNumberService.updatePhoneNumber({
+      currentPhoneNumber: user.phoneNumber, newPhoneNumber: body.phoneNumber
+    }, transaction);
+
+    if (phoneNumberResponse instanceof ResponseFactory) return phoneNumberResponse;
+
     await transaction.commit();
-    return user;
-  } else await transaction.rollback();
+
+    if (Object.keys(addressResponse).length === 0 && Object.keys(phoneNumberResponse).length === 0) {
+      return new ResponseFactory().createSuccess('No changes detected.', {}, 200);
+    }
+
+    return new ResponseFactory().createSuccess(
+      'User updated successfully',
+      {uuid: body.uuid, address: addressResponse, phoneNumber: phoneNumberResponse},
+      200
+    );
+  } catch (err) {
+    await transaction.rollback();
+
+    return sequelizeError(err);
+  }
 };
+
+const updateUserPassword = async function (uuid, password) {
+  const user = await userModel.getUserById(uuid).catch(err => sequelizeError(err));
+
+  if (!user) return userErrors.userNotFoundError(uuid);
+
+  user.password = password;
+  await user.save().catch(err => sequelizeError(err));
+
+  return new ResponseFactory().createSuccess(
+    'Password updated successfully',
+    {},
+    200
+  );
+}
 
 const deleteUser = async function (uuid) {
   const user = await userModel.deleteUser(uuid)
@@ -133,6 +174,7 @@ module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
+  updateUserPassword,
   deleteUser,
   reactivateUser
 }

@@ -22,22 +22,22 @@ const createUser = async function (req, res) {
       areaCode: req.body.areaCode,
       phoneNumber: req.body.phoneNumber
     }
-  }
+  };
 
   const response = await userService.createUser(body);
 
   return res.status(response.status || 200).send(response);
-}
+};
 
 const getAllUsers = async function (req, res) {
-  const retrieveAll = req.query.all
+  const retrieveAll = req.query.all;
   const limit = req.query.limit;
   const page = req.query.page;
 
   const response = await userService.getAllUsers(retrieveAll, limit, page);
 
   return res.status(response.status || 200).send(response);
-}
+};
 
 const getUserById = async function (req, res) {
   const {uuid} = req.params;
@@ -45,20 +45,40 @@ const getUserById = async function (req, res) {
   const response = await userService.getUserById(uuid);
 
   res.status(response.status || 200).send(response);
-}
+};
 
 const updateUser = async function (req, res) {
-  try {
-    const {uuid} = req.params;
-    const body = {...req.body}
+  const body = {
+    uuid: req.params.uuid,
+    address: {
+      street: req.body.street,
+      number: req.body['number'],
+      complement: req.body.complement,
+      neighborhood: req.body.neighborhood,
+      zipCode: req.body.zipCode,
+      city: req.body.city,
+      state: req.body.state
+    },
+    phoneNumber: {
+      uuid: req.body.phoneNumberUuid,
+      areaCode: req.body.areaCode,
+      phoneNumber: req.body.phoneNumber
+    }
+  };
 
-    const user = await userService.updateUser(uuid, body);
+  const response = await userService.updateUser(body);
 
-    res.status(200).send();
-  } catch (err) {
-    console.log(err);
-  }
-}
+  return res.status(response.status || 200).send(response);
+};
+
+const updateUserPassword = async function (req, res) {
+  const {uuid} = req.params;
+  const {password} = req.body;
+
+  const response = await userService.updateUserPassword(uuid, password);
+
+  return res.status(response.status || 200).send(response);
+};
 
 const deleteUser = async function (req, res) {
   const {uuid} = req.params;
@@ -66,7 +86,7 @@ const deleteUser = async function (req, res) {
   const response = await userService.deleteUser(uuid);
 
   res.status(response.status || 200).send(response);
-}
+};
 
 
 const reactivateUser = async function (req, res) {
@@ -75,13 +95,14 @@ const reactivateUser = async function (req, res) {
   const response = await userService.reactivateUser(uuid);
 
   res.status(response.status || 200).send(response);
-}
+};
 
 module.exports = {
   createUser,
   getAllUsers,
   getUserById,
   updateUser,
+  updateUserPassword,
   deleteUser,
   reactivateUser
-}
+};
