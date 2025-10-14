@@ -1,10 +1,16 @@
 const {body, query, param} = require('express-validator');
 
-const postAllowedFields = ['name', 'email', 'cpf', 'password', 'confirmPassword', 'birthday',
+const createUserAllowedFields = ['name', 'email', 'cpf', 'password', 'confirmPassword', 'birthday',
   'street', 'number', 'complement', 'neighborhood', 'city', 'zipCode', 'state',
   'phoneNumber', 'areaCode'];
 
-const getAllAllowedFields = ['all', 'limit', 'page'];
+const getAllUsersAllowedFields = ['all', 'limit', 'page'];
+
+const updateUserAllowedFields = ['userUuid',
+  'street', 'number', 'complement', 'neighborhood', 'city', 'zipCode', 'state',
+  'phoneNumberUuid', 'phoneNumber', 'areaCode'];
+
+const updateUserPasswordAllowedFields = ['password', 'confirmPassword'];
 
 const createUserSchema = [
   body('name').exists().withMessage('Name field is required.').bail()
@@ -71,12 +77,13 @@ const createUserSchema = [
     .trim().isLength({min: 9, max: 9}).withMessage('Phone number field must have 9 characters.').bail()
     .matches(/^\d+$/).withMessage('Phone number field must only contain numbers.'),
 
-  body('areaCode').isString().withMessage('Area code field must be a string.').bail()
+  body('areaCode').exists().withMessage('Area code field is required.').bail()
+    .isString().withMessage('Area code field must be a string.').bail()
     .trim().isLength({min: 2, max: 2}).withMessage('Area code field must have 2 characters.').bail()
     .matches(/^\d+$/).withMessage('Area code field must only contain numbers.'),
 
   body().custom(body => {
-    const extra = Object.keys(body).filter(key => !postAllowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !createUserAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
     return true;
   })
@@ -102,7 +109,7 @@ const getAllUsersSchema = [
     }),
 
   query().custom(body => {
-    const extra = Object.keys(body).filter(key => !getAllAllowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !getAllUsersAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following query parameters are not allowed: ${extra.join(', ')}.`);
     return true;
   })
@@ -114,9 +121,110 @@ const getUserByIdSchema = [
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
 ];
 
+const updateUserSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  body('street').optional()
+    .isString().withMessage('Street field must be a string.').bail()
+    .trim().isLength({min: 1, max: 254}).withMessage('Street field must have between 1 and 254 characters.'),
+
+  body('number').optional()
+    .isString().withMessage('Number field must be a string.').bail()
+    .trim().isLength({min: 1, max: 10}).withMessage('Number field must have between 1 and 10 characters.'),
+
+  body('complement').optional()
+    .isString().withMessage('Complement field must be a string.').bail()
+    .trim().isLength({min: 1, max: 100}).withMessage('Complement field must have between 1 and 100 characters.'),
+
+  body('city').optional()
+    .isString().withMessage('City field must be a string.').bail()
+    .trim().isLength({min: 1, max: 100}).withMessage('City field must have between 1 and 100 characters.'),
+
+  body('state').optional()
+    .isString().withMessage('State field must be a string.').bail()
+    .trim().isLength({min: 2, max: 2}).withMessage('State field must have 2 characters.').bail()
+    .matches(/^[A-Za-z]+$/).withMessage('State field must only contain letters.'),
+
+  body('zipCode').optional()
+    .isString().withMessage('Zip code field must be a string.').bail()
+    .trim().isLength({min: 8, max: 8}).withMessage('Zip code field must have 8 characters.').bail()
+    .matches(/^\d+$/).withMessage('Zip code field must only contain numbers.'),
+
+  body('neighborhood').optional()
+    .isString().withMessage('Neighborhood field must be a string.').bail()
+    .trim().isLength({min: 1, max: 100}).withMessage('Neighborhood field must have between 1 and 100 characters.'),
+
+  body('phoneNumberUuid').optional()
+    .isString().withMessage('phoneNumberUuid field must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('phoneNumberUuid field must have 36 characters.'),
+
+  body('phoneNumber').optional()
+    .isString().withMessage('Phone number field must be a string.').bail()
+    .trim().isLength({min: 9, max: 9}).withMessage('Phone number field must have 9 characters.').bail()
+    .matches(/^\d+$/).withMessage('Phone number field must only contain numbers.'),
+
+  body('areaCode').optional()
+    .isString().trim().isLength({min: 2, max: 2}).withMessage('Area code field must have 2 characters.').bail()
+    .matches(/^\d+$/).withMessage('Area code field must only contain numbers.'),
+
+  body().custom(value => {
+    if ((value.phoneNumber || value.areaCode) && !value.phoneNumberUuid) {
+      throw new Error('phoneNumberUuid field is required when phoneNumber or areaCode are provided.');
+    }
+    return true;
+  }),
+
+  body().custom(body => {
+    const extra = Object.keys(body).filter(key => !updateUserAllowedFields.includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const updateUserPasswordSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  body('password').exists().withMessage('Password field is required.').bail()
+    .isString().withMessage('Password field must be a string.').bail()
+    .trim().isLength({min: 8, max: 60}).withMessage('Password field must have between 8 and 60 characters.')
+    .matches(/(?=.*[a-z])/).withMessage('Password field must contain at least one lowercase letter.')
+    .matches(/(?=.*[A-Z])/).withMessage('Password field must contain at least one uppercase letter.')
+    .matches(/(?=.*\d)/).withMessage('Password field must contain at least one number.')
+    .matches(/(?=.*[@$!%*?&])/).withMessage('Password field must contain at least one special character (@$!%*?&).'),
+
+  body('confirmPassword').exists().withMessage('Confirm password field is required.').bail()
+    .custom((value, {req}) => value === req.body.password).withMessage('Passwords must match.'),
+
+  body().custom(body => {
+    const extra = Object.keys(body).filter(key => !updateUserPasswordAllowedFields.includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const deleteUserSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+];
+
+const reactivateUserSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+]
+
 module.exports = {
   createUserSchema,
   getAllUsersSchema,
-  getUserByIdSchema
+  getUserByIdSchema,
+  updateUserSchema,
+  updateUserPasswordSchema,
+  deleteUserSchema,
+  reactivateUserSchema
 }
 

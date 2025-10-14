@@ -9,7 +9,7 @@ const PhoneNumber = require('./phoneNumber-model');
 class User extends Model {
   // password;
 
-  static async create(values, options) {
+  static async createUser(values, options) {
     return await super.create({
       uuid: values.uuid,
       name: values.name,
@@ -94,20 +94,6 @@ class User extends Model {
     });
   };
 
-  static async getUserByEmail(email) {
-    return await super.findOne({where: {email}});
-  };
-
-  static async getUserByCpf(cpf) {
-    return await super.findOne({where: {cpf}});
-  }
-
-  // TODO
-  static async updateUser(uuid, body) {
-    // fazer o find one, salvar em 'user'
-    // user.save();
-  };
-
   static async deleteUser(uuid) {
     const user = await super.findByPk(uuid);
 
@@ -178,14 +164,8 @@ User.init({
   modelName: 'user',
   paranoid: true,
   hooks: {
-    beforeCreate: async (user) => {
+    beforeSave: async (user) => {
       if (user.dataValues.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.dataValues.password = await bcrypt.hash(user.dataValues.password, salt);
-      }
-    },
-    beforeUpdate: async (user) => {
-      if (user.changed('password')) {
         const salt = await bcrypt.genSalt(10);
         user.dataValues.password = await bcrypt.hash(user.dataValues.password, salt);
       }

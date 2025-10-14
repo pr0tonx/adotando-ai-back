@@ -6,13 +6,23 @@ const config = require(__dirname + '/../config/config.json')[env];
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 class PhoneNumber extends Model {
-  static async create(values, options) {
+  static async createPhoneNumber(values, options) {
     return await super.create({
       uuid: values.uuid,
       areaCode: values.areaCode,
       phoneNumber: values.phoneNumber
     }, {transaction: options.transaction});
-  }
+  };
+
+  static async updatePhoneNumber(values, options) {
+    return await super.update(
+      values.changes,
+      {
+        where: {uuid: values.uuid},
+        transaction: options.transaction
+      }
+    );
+  };
 }
 
 PhoneNumber.init({

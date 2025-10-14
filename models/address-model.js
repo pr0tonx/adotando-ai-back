@@ -2,7 +2,7 @@ const {DataTypes, Model} = require('sequelize');
 const {sequelize} = require('../database/database');
 
 class Address extends Model {
-  static async create(values, options) {
+  static async createAddress(values, options) {
     return await super.create({
       uuid: values.uuid,
       street: values.street,
@@ -13,7 +13,17 @@ class Address extends Model {
       zipCode: values.zipCode,
       neighborhood: values.neighborhood
     }, {transaction: options.transaction});
-  }
+  };
+
+  static async updateAddress(values, options) {
+    return await super.update(
+      values.changes,
+      {
+        where: {uuid: values.uuid},
+        transaction: options.transaction
+      }
+    );
+  };
 }
 
 Address.init({
