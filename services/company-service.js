@@ -6,48 +6,47 @@ const ResponseFactory = require('../utils/ResponseFactory');
 const {isEmailAvailable} = require('../utils/emailAvailabilty');
 
 const {sequelizeError} = require('../errors/sequelizeError');
-const userErrors = require('../errors/userErrors');
+const companyErrors = require('../errors/companyErrors');
 
-const userModel = require('../models/user-model');
+const companyModel = require('../models/company-model');
 
 const addressService = require('./address-service');
 const phoneNumberService = require('./phoneNumber-service');
-const userPhoneNumberService = require('./userPhoneNumber-service');
+const companyPhoneNumberService = require('./companyPhoneNumber-service');
 
-const createUser = async function (body) {
+const createCompany = async function (body) {
   const transaction = await sequelize.transaction();
 
   try {
-    await isEmailAvailable(body.user.email);
+    await isEmailAvailable(body.company.email);
 
     const addressResponse = await addressService.createAddress(body.address, transaction);
 
-    const userResponse = await userModel.createUser({
+    const companyResponse = await companyModel.createCompany({
       uuid: uuid.v6(),
-      ...body.user,
+      ...body.company,
       addressUuid: addressResponse.uuid
     }, {transaction}).then(({dataValues}) => dataValues);
 
     const phoneNumberResponse = await phoneNumberService.createPhoneNumber(body.phoneNumber, transaction);
 
-    await userPhoneNumberService.createUserPhoneNumber({
-      userUuid: userResponse.uuid,
+    await companyPhoneNumberService.createCompanyPhoneNumber({
+      companyUuid: companyResponse.uuid,
       phoneNumberUuid: phoneNumberResponse.uuid
     }, transaction);
 
     await transaction.commit();
 
     return new ResponseFactory().createSuccess(
-      'User created successfully',
+      'Company created successfully',
       {
-        uuid: userResponse.uuid,
-        name: userResponse.name,
-        cpf: userResponse.cpf,
-        email: userResponse.email,
-        password: userResponse.password,
-        birthday: userResponse.birthday,
+        uuid: companyResponse.uuid,
+        name: companyResponse.name,
+        cnpj: companyResponse.cnpj,
+        email: companyResponse.email,
+        password: companyResponse.password,
         address: addressResponse,
-        phoneNumber: phoneNumberResponse,
+        phoneNumber: phoneNumberResponse
       },
       200
     );
@@ -58,57 +57,57 @@ const createUser = async function (body) {
       const field = err.errors[0].path;
       const value = err.errors[0].value;
 
-      return userErrors.conflictError(field, value);
+      return companyErrors.conflictError(field, value);
     }
 
     return sequelizeError(err);
   }
 };
 
-const getAllUsers = async function (retrieveAll, limit, page) {
+const getAllCompanies = async function (retrieveAll, limit, page) {
   retrieveAll = !retrieveAll || retrieveAll === 'false';
   limit = parseInt(limit) || 15;
   page = parseInt(page) || 1;
 
-  const users = await userModel.getAllUsers(retrieveAll, limit, page)
+  const companies = await companyModel.getAllCompanies(retrieveAll, limit, page)
     .catch(err => sequelizeError(err));
 
   return new ResponseFactory().createSuccess(
-    users.data.length === 0 ? 'No users found for this page.' : 'Users retrieved successfully.',
-    {users: users.data.map(user => user.dataValues || {}), meta: users.meta},
+    companies.data.length === 0 ? 'No companies found for this page.' : 'Companies retrieved successfully.',
+    {companies: companies.data.map(company => company.dataValues || {}), meta: companies.meta},
     200
   );
 };
 
-const getUserById = async function (uuid) {
-  const user = await userModel.getUserById(uuid)
+const getCompanyById = async function (uuid) {
+  const company = await companyModel.getCompanyById(uuid)
     .catch(err => sequelizeError(err));
 
-  if (!user) return userErrors.userNotFoundError(uuid);
+  if (!company) return companyErrors.companyNotFoundError(uuid);
 
   return new ResponseFactory().createSuccess(
-    'User retrieved successfully',
-    user?.dataValues || {},
+    'Company retrieved successfully',
+    company?.dataValues || {},
     200
   );
 };
 
-const updateUser = async function (body) {
+const updateCompany = async function (body) {
   const transaction = await sequelize.transaction();
 
   try {
-    const user = await userModel.getUserById(body.uuid);
+    const company = await companyModel.getCompanyById(body.uuid);
 
-    if (!user) return userErrors.userNotFoundError(uuid);
+    if (!company) return companyErrors.companyNotFoundError(uuid);
 
     const addressResponse = await addressService.updateAddress({
-      uuid: user.addressUuid, currentAddress: user.address, newAddress: body.address
+      uuid: company.addressUuid, currentAddress: company.address, newAddress: body.address
     }, transaction);
 
     if (addressResponse instanceof ResponseFactory) return addressResponse;
 
     const phoneNumberResponse = await phoneNumberService.updatePhoneNumber({
-      currentPhoneNumber: user.phoneNumber, newPhoneNumber: body.phoneNumber
+      currentPhoneNumber: company.phoneNumber, newPhoneNumber: body.phoneNumber
     }, transaction);
 
     if (phoneNumberResponse instanceof ResponseFactory) return phoneNumberResponse;
@@ -120,7 +119,7 @@ const updateUser = async function (body) {
     }
 
     return new ResponseFactory().createSuccess(
-      'User updated successfully',
+      'Company updated successfully',
       {uuid: body.uuid, address: addressResponse, phoneNumber: phoneNumberResponse},
       200
     );
@@ -131,53 +130,53 @@ const updateUser = async function (body) {
   }
 };
 
-const updateUserPassword = async function (uuid, password) {
-  const user = await userModel.getUserById(uuid).catch(err => sequelizeError(err));
+const updateCompanyPassword = async function (uuid, password) {
+  const company = await companyModel.getCompanyById(uuid).catch(err => sequelizeError(err));
 
-  if (!user) return userErrors.userNotFoundError(uuid);
+  if (!company) return companyErrors.companyNotFoundError(uuid);
 
-  user.password = password;
-  await user.save().catch(err => sequelizeError(err));
+  company.password = password;
+  await company.save().catch(err => sequelizeError(err));
 
   return new ResponseFactory().createSuccess(
     'Password updated successfully',
     {},
     200
   );
-}
+};
 
-const deleteUser = async function (uuid) {
-  const user = await userModel.deleteUser(uuid)
+const deleteCompany = async function (uuid) {
+  const company = await companyModel.deleteCompany(uuid)
     .catch(err => sequelizeError(err));
 
-  if (!user) return userErrors.userNotFoundError(uuid);
+  if (!company) return companyErrors.companyNotFoundError(uuid);
 
   return new ResponseFactory().createSuccess(
-    'User deleted successfully',
-    user?.dataValues || {},
+    'Company deleted successfully',
+    company?.dataValues || {},
     200
   );
 };
 
-const reactivateUser = async function (uuid) {
-  const user = await userModel.reactivateUser(uuid)
+const reactivateCompany = async function (uuid) {
+  const company = await companyModel.reactivateCompany(uuid)
     .catch(err => sequelizeError(err));
 
-  if (!user) return userErrors.userNotFoundError(uuid)
+  if (!company) return companyErrors.companyNotFoundError(uuid);
 
   return new ResponseFactory().createSuccess(
-    'User reactivated successfully.',
-    user?.dataValues || {},
+    'Company reactivated successfully.',
+    company?.dataValues || {},
     200
   );
 };
 
 module.exports = {
-  createUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  updateUserPassword,
-  deleteUser,
-  reactivateUser
-}
+  createCompany,
+  getAllCompanies,
+  getCompanyById,
+  updateCompany,
+  updateCompanyPassword,
+  deleteCompany,
+  reactivateCompany
+};

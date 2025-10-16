@@ -1,29 +1,28 @@
 const {body, query, param} = require('express-validator');
 
-const createUserAllowedFields = ['name', 'email', 'cpf', 'password', 'confirmPassword', 'birthday',
+const createCompanyAllowedFields = ['name', 'cnpj', 'email', 'password', 'confirmPassword',
   'street', 'number', 'complement', 'neighborhood', 'city', 'zipCode', 'state',
   'phoneNumber', 'areaCode'];
 
-const getAllUsersAllowedFields = ['all', 'limit', 'page'];
+const getAllCompaniesAllowedFields = ['all', 'limit', 'page'];
 
 const updateUserAllowedFields = ['street', 'number', 'complement', 'neighborhood', 'city', 'zipCode', 'state',
   'phoneNumberUuid', 'phoneNumber', 'areaCode'];
 
-const updateUserPasswordAllowedFields = ['password', 'confirmPassword'];
+const updateCompanyPasswordAllowedFields = ['password', 'confirmPassword'];
 
-const createUserSchema = [
+const createCompanySchema = [
   body('name').exists().withMessage('Name field is required.').bail()
     .isString().withMessage('Name field must be a string.').bail()
     .trim().isLength({min: 1, max: 150}).withMessage('Name field must have between 1 and 150 characters.'),
 
+  body('cnpj').exists().withMessage('CNPJ field is required.').bail()
+    .isString().withMessage('CNPJ field must be a string.').bail()
+    .trim().isLength({min: 14, max: 14}).withMessage('CNPJ field must have 14 characters.'),
+
   body('email').exists().withMessage('Email field is required.').bail()
     .isEmail().withMessage('Email field must be a valid email.')
     .trim().isLength({min: 1, max: 254}).withMessage('Email field must have between 1 and 254 characters.'),
-
-  body('cpf').exists().withMessage('CPF field is required.').bail()
-    .isString().withMessage('CPF field must be a string.').bail()
-    .isNumeric().withMessage('CPF field must only contain numbers.').bail()
-    .trim().isLength({min: 11, max: 11}).withMessage('CPF field field must have 11 characters.'),
 
   body('password').exists().withMessage('Password field is required.').bail()
     .isString().withMessage('Password field must be a string.').bail()
@@ -35,11 +34,6 @@ const createUserSchema = [
 
   body('confirmPassword').exists().withMessage('Confirm password field is required.').bail()
     .custom((value, {req}) => value === req.body.password).withMessage('Passwords must match.'),
-
-  body('birthday').exists().withMessage('Birthday field is required.').bail()
-    .isDate().withMessage('Birthday field must be a date in YYYY-MM-DD format.').bail()
-    .trim().isLength({min: 10, max: 10}).withMessage('Birthday field must have 10 characters.').bail()
-    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Birthday field must be in YYYY-MM-DD format.'),
 
   body('street').exists().withMessage('Street field is required.').bail()
     .isString().withMessage('Street field must be a string.').bail()
@@ -82,13 +76,13 @@ const createUserSchema = [
     .matches(/^\d+$/).withMessage('Area code field must only contain numbers.'),
 
   body().custom(body => {
-    const extra = Object.keys(body).filter(key => !createUserAllowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !createCompanyAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
     return true;
   })
 ];
 
-const getAllUsersSchema = [
+const getAllCompaniesSchema = [
   query('all').optional()
     .custom(value => {
       if (value !== 'true' && value !== 'false') throw new Error('All query parameter must be either "true" or "false"');
@@ -108,19 +102,19 @@ const getAllUsersSchema = [
     }),
 
   query().custom(body => {
-    const extra = Object.keys(body).filter(key => !getAllUsersAllowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !getAllCompaniesAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following query parameters are not allowed: ${extra.join(', ')}.`);
     return true;
   })
 ];
 
-const getUserByIdSchema = [
+const getCompanyByIdSchema = [
   param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
     .isString().withMessage('Uuid query parameter must be a string.').bail()
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
-];
+]
 
-const updateUserSchema = [
+const updateCompanySchema = [
   param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
     .isString().withMessage('Uuid query parameter must be a string.').bail()
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
@@ -188,7 +182,7 @@ const updateUserSchema = [
   })
 ];
 
-const updateUserPasswordSchema = [
+const updateCompanyPasswordSchema = [
   param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
     .isString().withMessage('Uuid query parameter must be a string.').bail()
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
@@ -205,31 +199,30 @@ const updateUserPasswordSchema = [
     .custom((value, {req}) => value === req.body.password).withMessage('Passwords must match.'),
 
   body().custom(body => {
-    const extra = Object.keys(body).filter(key => !updateUserPasswordAllowedFields.includes(key));
+    const extra = Object.keys(body).filter(key => !updateCompanyPasswordAllowedFields.includes(key));
     if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
     return true;
   })
 ];
 
-const deleteUserSchema = [
+const deleteCompanySchema = [
   param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
     .isString().withMessage('Uuid query parameter must be a string.').bail()
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
 ];
 
-const reactivateUserSchema = [
+const reactivateCompanySchema = [
   param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
     .isString().withMessage('Uuid query parameter must be a string.').bail()
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
 ];
 
 module.exports = {
-  createUserSchema,
-  getAllUsersSchema,
-  getUserByIdSchema,
-  updateUserSchema,
-  updateUserPasswordSchema,
-  deleteUserSchema,
-  reactivateUserSchema
-};
-
+  createCompanySchema,
+  getAllCompaniesSchema,
+  getCompanyByIdSchema,
+  updateCompanySchema,
+  updateCompanyPasswordSchema,
+  deleteCompanySchema,
+  reactivateCompanySchema
+}

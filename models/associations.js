@@ -12,30 +12,11 @@ Address.hasMany(User);
 User.belongsToMany(PhoneNumber, {through: 'userPhoneNumber', as: 'phoneNumber'});
 PhoneNumber.belongsToMany(User, {through: 'userPhoneNumber'});
 
-Company.belongsTo(Address, {
-  foreignKey: 'addressUuid'
-});
+Company.belongsTo(Address, {as: 'address'});
+Address.hasOne(Company, {});
 
-Address.hasOne(Company, {
-  foreignKey: {
-    name: 'addressUuid',
-    as: 'addressToCompany'
-  }
-});
-
-Company.belongsToMany(PhoneNumber, {
-  through: 'companyPhoneNumber',
-  foreignKey: 'companyUuid',
-  otherKey: 'phoneNumberUuid',
-  as: 'companyToPhoneNumber'
-});
-
-PhoneNumber.belongsToMany(Company, {
-  through: 'companyPhoneNumber',
-  foreignKey: 'phoneNumberUuid',
-  otherKey: 'companyUuid',
-  as: 'phoneNumberToCompany'
-});
+Company.belongsToMany(PhoneNumber, {through: 'companyPhoneNumber', as: 'phoneNumber'});
+PhoneNumber.belongsToMany(Company, {through: 'companyPhoneNumber'});
 
 Company.hasMany(Dog, {
   foreignKey: 'companyUuid',
