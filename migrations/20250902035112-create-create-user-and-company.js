@@ -54,11 +54,12 @@ module.exports = {
           type: Sequelize.UUID
         },
         name: {
-          type: Sequelize.STRING(15),
+          type: Sequelize.STRING(150),
           allowNull: false
         },
         cnpj: {
           type: Sequelize.STRING(14),
+          unique: true,
           allowNull: false
         },
         email: {
@@ -227,6 +228,11 @@ module.exports = {
       }, {transaction: t});
 
       await queryInterface.createTable('companyPhoneNumber', {
+        uuid: {
+          allowNull: false,
+          primaryKey: true,
+          type: Sequelize.UUID
+        },
         companyUuid: {
           type: Sequelize.UUID,
           allowNull: false,
@@ -261,12 +267,6 @@ module.exports = {
           allowNull: true,
           type: Sequelize.DATE
         }
-      }, {transaction: t});
-
-      await queryInterface.addConstraint('companyPhoneNumber', {
-        fields: ['companyUuid', 'phoneNumberUuid'],
-        type: 'primary key',
-        name: 'pk_companyPhoneNumber'
       }, {transaction: t});
     });
   },

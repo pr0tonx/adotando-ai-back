@@ -109,6 +109,39 @@ class User extends Model {
 
     return await user.restore();
   };
+
+  static async getUserByKey(obj) {
+    const user = await super.findOne({
+      where: obj,
+      attributes: {
+        include: ['uuid', 'name', 'cpf', 'email', 'birthday'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt']
+      },
+      include: [
+        {
+          model: Address,
+          as: 'address',
+          attributes: {
+            include: ['uuid', 'street', 'number', 'complement', 'city', 'state', 'zipCode', 'neighborhood'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          },
+        },
+        {
+          model: PhoneNumber,
+          as: 'phoneNumber',
+          attributes: {
+            include: ['uuid', 'areaCode', 'phoneNumber'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          },
+          through: {attributes: []}
+        }
+      ]
+    });
+
+    if (!user) return;
+
+    return user;
+  }
 }
 
 // User.prototype.validPassword = async function (password) {
