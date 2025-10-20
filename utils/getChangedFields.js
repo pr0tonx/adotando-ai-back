@@ -6,6 +6,7 @@ const getChangedFields = (current, updated, fields) => {
       changes[field] = updated[field];
     }
   });
+
   return changes;
 };
 
