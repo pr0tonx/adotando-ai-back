@@ -6,7 +6,21 @@ const config = require(__dirname + '/../config/config.json')[env];
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 class Image extends Model {
+  static async createImage(values, options) {
+    return await super.create({
+      uuid: values.uuid,
+      dogUuid: values.dogUuid,
+      data: values.data
+    }, {transaction: options.transaction});
+  };
 
+  static async getImageById(uuid) {
+    const image = await super.findByPk(uuid);
+
+    if (!image) return;
+
+    return image;
+  };
 }
 
 Image.init({
@@ -37,7 +51,8 @@ Image.init({
   }
 }, {
   sequelize,
-  modelName: 'image'
+  modelName: 'image',
+  freezeTableName: true
 });
 
 module.exports = Image;

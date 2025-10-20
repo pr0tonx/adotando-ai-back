@@ -8,7 +8,8 @@ const {
   getDogByIdSchema,
   editDogSchema,
   deleteDogSchema,
-  reactivateDogSchema
+  reactivateDogSchema,
+  deleteDogImageSchema
 } = require('../schemas/dogValidatorSchemas');
 
 const router = express.Router();
@@ -19,5 +20,7 @@ router.get('/:uuid', validate(getDogByIdSchema), async (req, res) => dogControll
 router.patch('/:uuid', validate(editDogSchema), async (req, res) => dogController.editDog(req, res));
 router.delete('/:uuid', validate(deleteDogSchema), async (req, res) => dogController.deleteDog(req, res));
 router.patch('/:uuid/reactivate-dog', validate(reactivateDogSchema), async (req, res) => dogController.reactivateDog(req, res));
+
+router.delete('/dogs-image/:uuid', validate(deleteDogImageSchema), async (req, res) => dogController.deleteDogImage(req, res));
 
 module.exports = router;

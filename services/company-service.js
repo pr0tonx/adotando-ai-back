@@ -183,6 +183,20 @@ const getDogsByCompany = async function (uuid) {
   const dogs = await dogService.getDogByKeys(obj)
     .catch(err => sequelizeError(err));
 
+  for (const dog of dogs) {
+    if (dog.images.length > 0) {
+      dog.images = dog.images.map(img => {
+        return {
+          uuid: img.uuid,
+          dogUuid: img.dogUuid,
+          data: `data:image/png;base64,${img.data.toString('base64')}`
+        };
+      });
+    } else {
+      dog.images = [];
+    }
+  }
+
   return new ResponseFactory().createSuccess(
     dogs.length > 0 ? 'Dogs retrieved successfully' : 'No dogs found for this company.',
     dogs,

@@ -3,6 +3,8 @@ const process = require('process');
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 
+const Image = require('./image-model');
+
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 class Dog extends Model {
@@ -26,6 +28,16 @@ class Dog extends Model {
         include: ['uuid', 'name', 'gender', 'age', 'breed', 'color', 'description', 'status'],
         exclude: ['createdAt', 'updatedAt', 'deletedAt']
       },
+      include: [
+        {
+          model: Image,
+          as: 'images',
+          attributes: {
+            include: ['uuid', 'dogUuid', 'data'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          }
+        }
+      ],
       where: {status},
       limit,
       offset: (page - 1) * limit,
@@ -52,7 +64,17 @@ class Dog extends Model {
       attributes: {
         include: ['uuid', 'name', 'gender', 'age', 'breed', 'color', 'description', 'status'],
         exclude: ['createdAt', 'updatedAt', 'deletedAt']
-      }
+      },
+      include: [
+        {
+          model: Image,
+          as: 'images',
+          attributes: {
+            include: ['uuid', 'dogUuid', 'data'],
+            exclude: ['createdAt', 'updatedAt', 'deletedAt']
+          }
+        }
+      ]
     });
   };
 
@@ -92,7 +114,17 @@ class Dog extends Model {
         attributes: {
           include: ['uuid', 'name', 'gender', 'age', 'breed', 'color', 'description', 'status'],
           exclude: ['createdAt', 'updatedAt', 'deletedAt']
-        }
+        },
+        include: [
+          {
+            model: Image,
+            as: 'images',
+            attributes: {
+              include: ['uuid', 'dogUuid', 'data'],
+              exclude: ['createdAt', 'updatedAt', 'deletedAt']
+            }
+          }
+        ]
       }
     );
   };

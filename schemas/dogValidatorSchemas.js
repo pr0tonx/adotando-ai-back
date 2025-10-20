@@ -1,10 +1,10 @@
 const {body, query, param} = require('express-validator');
 
-const createDogAllowedFields = ['name', 'gender', 'age', 'breed', 'color', 'description', 'companyUuid', 'status'];
+const createDogAllowedFields = ['name', 'gender', 'age', 'breed', 'color', 'description', 'companyUuid', 'status', 'images'];
 
 const getAllDogsAllowedFields = ['status', 'limit', 'page'];
 
-const editDogAllowedFields = ['name', 'age', 'color', 'description', 'status'];
+const editDogAllowedFields = ['name', 'age', 'color', 'description', 'status', 'images'];
 
 const createDogSchema = [
   body('name').exists().withMessage('Name field is required.').bail()
@@ -142,11 +142,18 @@ const reactivateDogSchema = [
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
 ];
 
+const deleteDogImageSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+];
+
 module.exports = {
   createDogSchema,
   getAllDogsSchema,
   getDogByIdSchema,
   editDogSchema,
   deleteDogSchema,
-  reactivateDogSchema
+  reactivateDogSchema,
+  deleteDogImageSchema
 };
