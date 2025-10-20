@@ -13,6 +13,7 @@ const companyModel = require('../models/company-model');
 const addressService = require('./address-service');
 const phoneNumberService = require('./phoneNumber-service');
 const companyPhoneNumberService = require('./companyPhoneNumber-service');
+const dogService = require('./dog-service');
 
 const createCompany = async function (body) {
   const transaction = await sequelize.transaction();
@@ -171,6 +172,24 @@ const reactivateCompany = async function (uuid) {
   );
 };
 
+const getDogsByCompany = async function (uuid) {
+  const company = await companyModel.getCompanyById(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (!company) return companyErrors.companyNotFoundError(uuid);
+
+  const obj = {companyUuid: uuid};
+
+  const dogs = await dogService.getDogByKeys(obj)
+    .catch(err => sequelizeError(err));
+
+  return new ResponseFactory().createSuccess(
+    dogs.length > 0 ? 'Dogs retrieved successfully' : 'No dogs found for this company.',
+    dogs,
+    200
+  );
+};
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -178,5 +197,6 @@ module.exports = {
   updateCompany,
   updateCompanyPassword,
   deleteCompany,
-  reactivateCompany
+  reactivateCompany,
+  getDogsByCompany
 };
