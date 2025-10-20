@@ -217,6 +217,18 @@ const reactivateCompanySchema = [
     .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
 ];
 
+const getDogsByCompanySchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  param().custom(body => {
+    const extra = Object.keys(body).filter(key => !['uuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
 module.exports = {
   createCompanySchema,
   getAllCompaniesSchema,
@@ -224,5 +236,6 @@ module.exports = {
   updateCompanySchema,
   updateCompanyPasswordSchema,
   deleteCompanySchema,
-  reactivateCompanySchema
+  reactivateCompanySchema,
+  getDogsByCompanySchema
 }

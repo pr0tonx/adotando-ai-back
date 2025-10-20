@@ -84,6 +84,25 @@ class Dog extends Model {
 
     return await dog.restore();
   };
+
+  static async getDogByKeys(obj) {
+    return await super.findAll(
+      {
+        where: obj,
+        attributes: {
+          include: ['uuid', 'name', 'gender', 'age', 'breed', 'color', 'description', 'status'],
+          exclude: ['createdAt', 'updatedAt', 'deletedAt']
+        }
+      }
+    );
+  };
+
+  static async changeDogStatus(values, options) {
+    return await super.update({status: values.status}, {
+      where: {uuid: values.uuid},
+      transaction: options.transaction
+    });
+  };
 }
 
 Dog.init({

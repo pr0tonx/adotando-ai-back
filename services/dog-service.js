@@ -6,9 +6,10 @@ const ResponseFactory = require('../utils/ResponseFactory');
 
 const {sequelizeError} = require('../errors/sequelizeError');
 const dogErrors = require('../errors/dogErrors');
+const companyErrors = require('../errors/companyErrors');
 
 const dogModel = require('../models/dog-model');
-const {getChangedFields} = require("../utils/getChangedFields");
+const {getChangedFields} = require('../utils/getChangedFields');
 
 // TODO adicionar as imagens junto nesse request
 const createDog = async function (body) {
@@ -31,6 +32,10 @@ const createDog = async function (body) {
 
   } catch (err) {
     await transaction.rollback();
+
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return companyErrors.companyNotFoundError(body.companyUuid);
+    }
 
     return sequelizeError(err);
   }
@@ -118,11 +123,25 @@ const reactivateDog = async function (uuid) {
   );
 };
 
+const getDogByKeys = async function (obj) {
+  const dogs = await dogModel.getDogByKeys(obj) || {};
+
+  return dogs.map(value => value.dataValues)
+};
+
+const changeDogStatus = async function (values, transaction) {
+  const dog = await dogModel.changeDogStatus(values, {transaction});
+
+  return dog.dataValues;
+};
+
 module.exports = {
   createDog,
   getAllDogs,
   getDogById,
   editDog,
   deleteDog,
-  reactivateDog
+  reactivateDog,
+  getDogByKeys,
+  changeDogStatus
 };

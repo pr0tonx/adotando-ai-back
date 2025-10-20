@@ -95,6 +95,14 @@ const reactivateCompany = async function (req, res) {
   res.status(response.status || 200).send(response);
 }
 
+const getDogsByCompany = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.getDogsByCompany(uuid);
+
+  res.status(response.status || 200).send(response);
+};
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -102,5 +110,6 @@ module.exports = {
   updateCompany,
   updateCompanyPassword,
   deleteCompany,
-  reactivateCompany
+  reactivateCompany,
+  getDogsByCompany
 }
