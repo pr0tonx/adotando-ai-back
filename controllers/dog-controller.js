@@ -50,11 +50,20 @@ const reactivateDog = async function (req, res) {
   res.status(response.status || 200).send(response);
 };
 
+const deleteDogImage = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await dogService.deleteDogImage(uuid);
+
+  res.status(response.status || 200).send(response);
+}
+
 module.exports = {
   createDog,
   getAllDogs,
   getDogById,
   editDog,
   deleteDog,
-  reactivateDog
+  reactivateDog,
+  deleteDogImage
 };

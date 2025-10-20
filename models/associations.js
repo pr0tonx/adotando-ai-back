@@ -18,6 +18,9 @@ Address.hasOne(Company, {});
 Company.belongsToMany(PhoneNumber, {through: 'companyPhoneNumber', as: 'phoneNumber'});
 PhoneNumber.belongsToMany(Company, {through: 'companyPhoneNumber'});
 
+Image.belongsTo(Dog, {as: 'images', foreignKey: 'dogUuid'});
+Dog.hasMany(Image, {});
+
 Company.hasMany(Dog, {
   foreignKey: 'companyUuid',
   as: 'companyToDog'
@@ -26,16 +29,6 @@ Company.hasMany(Dog, {
 Dog.belongsTo(Company, {
   foreignKey: 'companyUuid',
   as: 'dogToCompany'
-});
-
-Dog.hasMany(Image, {
-  foreignKey: 'dogUuid',
-  as: 'dogToImage'
-});
-
-Image.belongsTo(Dog, {
-  foreignKey: 'dogUuid',
-  as: 'imageToDog'
 });
 
 User.hasMany(Adoption, {
