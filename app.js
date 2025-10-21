@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const {testConnection} = require('./database/database');
@@ -14,6 +15,8 @@ app.use(bodyParser.json({limit: '50mb'}));
 const port = 4200;
 
 (async () => await testConnection())();
+
+app.use(cors({origin: '*'}));
 
 app.get('/healthcheck', (req, res) => res.status(200).send());
 app.use('/api', routes);
