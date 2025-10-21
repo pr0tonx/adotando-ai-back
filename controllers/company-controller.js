@@ -103,6 +103,18 @@ const getDogsByCompany = async function (req, res) {
   res.status(response.status || 200).send(response);
 };
 
+const createPost = async function (req, res) {
+  const body = {
+    companyUuid: req.params.uuid,
+    description: req.body.description,
+    dogUuid: req.body.dogUuid
+  };
+
+  const response = await companyService.createPost(body);
+
+  res.status(response.status || 200).send(response);
+};
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -111,5 +123,6 @@ module.exports = {
   updateCompanyPassword,
   deleteCompany,
   reactivateCompany,
-  getDogsByCompany
+  getDogsByCompany,
+  createPost
 }

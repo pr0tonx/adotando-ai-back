@@ -5,6 +5,7 @@ const PhoneNumber = require('./phoneNumber-model');
 const Dog = require('./dog-model');
 const Image = require('./image-model');
 const Adoption = require('./adoption-model');
+const Post = require('./post-model');
 
 User.belongsTo(Address, {as: 'address'});
 Address.hasMany(User);
@@ -20,6 +21,12 @@ PhoneNumber.belongsToMany(Company, {through: 'companyPhoneNumber'});
 
 Image.belongsTo(Dog, {as: 'images', foreignKey: 'dogUuid'});
 Dog.hasMany(Image, {});
+
+Post.belongsTo(Company, {as: 'posts'});
+Company.hasMany(Post, {});
+
+Post.belongsTo(Dog);
+Dog.hasMany(Post, {});
 
 Company.hasMany(Dog, {
   foreignKey: 'companyUuid',

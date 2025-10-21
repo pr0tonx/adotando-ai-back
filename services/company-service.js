@@ -7,6 +7,7 @@ const {isEmailAvailable} = require('../utils/emailAvailabilty');
 
 const {sequelizeError} = require('../errors/sequelizeError');
 const companyErrors = require('../errors/companyErrors');
+const dogErrors = require('../errors/dogErrors');
 
 const companyModel = require('../models/company-model');
 
@@ -14,6 +15,7 @@ const addressService = require('./address-service');
 const phoneNumberService = require('./phoneNumber-service');
 const companyPhoneNumberService = require('./companyPhoneNumber-service');
 const dogService = require('./dog-service');
+const postService = require('./post-service');
 
 const createCompany = async function (body) {
   const transaction = await sequelize.transaction();
@@ -204,6 +206,39 @@ const getDogsByCompany = async function (uuid) {
   );
 };
 
+const createPost = async function (body) {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const dogsByCompany = await getDogsByCompany(body.companyUuid);
+
+    if (dogsByCompany instanceof ResponseFactory) return dogsByCompany;
+
+    const dog = dogsByCompany.data.find(dog => dog.uuid === body.dogUuid);
+
+    if (!dog) return dogErrors.dogNotFoundError(body.dogUuid);
+
+    const post = await postService.createPost(body, transaction)
+      .catch(err => sequelizeError(err));
+
+    await transaction.commit();
+
+    return new ResponseFactory().createSuccess(
+      'Post created successfully',
+      post,
+      200
+    );
+  } catch (err) {
+    await transaction.rollback();
+
+    return sequelizeError(err);
+  }
+};
+
+// getAllPost
+// getPostById
+// deletePost
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -212,5 +247,6 @@ module.exports = {
   updateCompanyPassword,
   deleteCompany,
   reactivateCompany,
-  getDogsByCompany
+  getDogsByCompany,
+  createPost
 };

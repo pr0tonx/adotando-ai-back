@@ -18,7 +18,12 @@ class User extends Model {
       password: values.password,
       birthday: values.birthday,
       addressUuid: values.addressUuid
-    }, {transaction: options.transaction});
+    }, {
+      attributes: {
+        include: ['uuid', 'name', 'cpf', 'email', 'birthday'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt']
+      },
+      transaction: options.transaction});
   };
 
   static async getAllUsers(all, limit, page) {

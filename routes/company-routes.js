@@ -10,7 +10,8 @@ const {
   updateCompanyPasswordSchema,
   deleteCompanySchema,
   reactivateCompanySchema,
-  getDogsByCompanySchema
+  getDogsByCompanySchema,
+  createPostSchema
 } = require('../schemas/companyValidatorSchemas');
 
 const router = express.Router();
@@ -24,5 +25,7 @@ router.delete('/:uuid', validate(deleteCompanySchema), async (req, res) => compa
 router.patch('/:uuid/reactivate-company', validate(reactivateCompanySchema), async (req, res) => companyController.reactivateCompany(req, res));
 
 router.get('/:uuid/dogs', validate(getDogsByCompanySchema), async (req, res) => companyController.getDogsByCompany(req, res));
+
+router.post('/:uuid/post', validate(createPostSchema), async (req, res) => companyController.createPost(req, res));
 
 module.exports = router;
