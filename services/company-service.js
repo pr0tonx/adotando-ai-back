@@ -249,11 +249,45 @@ const getAllPosts = async function (limit, page) {
   );
 }
 
+const getPostById = async function (uuid) {
+  const post = await postService.getPostById(uuid)
+    .catch(err => sequelizeError(err));
 
+  if (!post) return new ResponseFactory().createError(404, 'Post not found.', {});
 
-// getAllPost
-// getPostById
-// deletePost
+  return new ResponseFactory().createSuccess(
+    'Post retrieved successfully',
+    post,
+    200
+  )
+};
+
+const deletePost = async function (uuid) {
+  const post = await postService.deletePost(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (!post) return new ResponseFactory().createError(404, 'Post not found.', {});
+
+  return new ResponseFactory().createSuccess(
+    'Post deleted successfully',
+    post,
+    200
+  );
+};
+
+const getPostsByCompany = async function (uuid) {
+  const posts = await postService.getPostsByCompany(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (posts instanceof ResponseFactory) return new ResponseFactory().createError(404, 'Posts not found.', {});
+
+  return new ResponseFactory().createSuccess(
+    'Posts retrieved successfully',
+    posts,
+    200
+  );
+};
+
 // getAllPostsByCompany
 
 module.exports = {
@@ -266,5 +300,8 @@ module.exports = {
   reactivateCompany,
   getDogsByCompany,
   createPost,
-  getAllPosts
+  getAllPosts,
+  getPostById,
+  deletePost,
+  getPostsByCompany
 };

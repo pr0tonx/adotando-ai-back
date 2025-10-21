@@ -12,13 +12,19 @@ const {
   reactivateCompanySchema,
   getDogsByCompanySchema,
   createPostSchema,
-  getAllPostsSchema
+  getAllPostsSchema,
+  getPostByIdSchema,
+  deletePostSchema,
+  getPostsByCompanySchema
 } = require('../schemas/companyValidatorSchemas');
 
 const router = express.Router();
 
 router.post('/:uuid/post', validate(createPostSchema), async (req, res) => companyController.createPost(req, res));
 router.get('/posts', validate(getAllPostsSchema), async (req, res) => companyController.getAllPosts(req, res));
+router.get('/posts/:uuid', validate(getPostByIdSchema), async (req, res) => companyController.getPostById(req, res));
+router.delete('/posts/:uuid', validate(deletePostSchema), async (req, res) => companyController.deletePost(req, res));
+router.get('/:uuid/posts', validate(getPostsByCompanySchema), async (req, res) => companyController.getPostsByCompany(req, res));
 
 router.post('/', validate(createCompanySchema), async (req, res) => companyController.createCompany(req, res));
 router.get('/', validate(getAllCompaniesSchema), async (req, res) => companyController.getAllCompanies(req, res));

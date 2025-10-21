@@ -116,9 +116,34 @@ const createPost = async function (req, res) {
 };
 
 const getAllPosts = async function (req, res) {
+  const limit = req.query.limit;
+  const page = req.query.page;
+
+  const response = await companyService.getAllPosts(limit, page);
+
+  res.status(response.status || 200).send(response);
+};
+
+const getPostById = async function (req, res) {
   const {uuid} = req.params;
 
-  const response = await companyService.getAllPosts(uuid);
+  const response = await companyService.getPostById(uuid);
+
+  res.status(response.status || 200).send(response);
+};
+
+const deletePost = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.deletePost(uuid);
+
+  res.status(response.status || 200).send(response);
+};
+
+const getPostsByCompany = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.getPostsByCompany(uuid);
 
   res.status(response.status || 200).send(response);
 }
@@ -133,5 +158,8 @@ module.exports = {
   reactivateCompany,
   getDogsByCompany,
   createPost,
-  getAllPosts
+  getAllPosts,
+  getPostById,
+  deletePost,
+  getPostsByCompany
 }
