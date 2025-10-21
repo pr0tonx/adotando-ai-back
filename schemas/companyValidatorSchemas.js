@@ -229,6 +229,88 @@ const getDogsByCompanySchema = [
   })
 ];
 
+const createPostSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  body('description').exists().optional()
+    .isString().withMessage('Description field must be a string.').bail()
+    .trim().isLength({min: 1, max: 500}).withMessage('Description field must have between 1 and 500 characters.'),
+
+  body('dogUuid').exists().withMessage('Dog uuid field is required.').bail()
+    .isString().withMessage('Dog uuid field must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Dog uuid field must have 36 characters.'),
+
+  param().custom(body => {
+    const extra = Object.keys(body).filter(key => !['uuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  }),
+
+  body().custom(body => {
+    const extra = Object.keys(body).filter(key => !['description', 'dogUuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const getAllPostsSchema = [
+  query('limit').optional()
+    .custom(value => {
+      if (!value.match(/^\d+$/)) throw new Error('Limit query parameter must be a number');
+      return true;
+    }),
+
+  query('page').optional()
+    .custom(value => {
+      if (!value.match(/^\d+$/)) throw new Error('Page query parameter must be a number');
+      return true;
+    }),
+
+  query().custom(body => {
+    const extra = Object.keys(body).filter(key => !['limit', 'page'].includes(key));
+    if (extra.length > 0) throw new Error(`The following query parameters are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const getPostByIdSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  param().custom(body => {
+    const extra = Object.keys(body).filter(key => !['uuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const deletePostSchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  param().custom(body => {
+    const extra = Object.keys(body).filter(key => !['uuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+];
+
+const getPostsByCompanySchema = [
+  param('uuid').exists().withMessage('Uuid query parameter is required.').bail()
+    .isString().withMessage('Uuid query parameter must be a string.').bail()
+    .trim().isLength({min: 36, max: 36}).withMessage('Uuid query parameter must have 36 characters.'),
+
+  param().custom(body => {
+    const extra = Object.keys(body).filter(key => !['uuid'].includes(key));
+    if (extra.length > 0) throw new Error(`The following fields are not allowed: ${extra.join(', ')}.`);
+    return true;
+  })
+]
+
 module.exports = {
   createCompanySchema,
   getAllCompaniesSchema,
@@ -237,5 +319,10 @@ module.exports = {
   updateCompanyPasswordSchema,
   deleteCompanySchema,
   reactivateCompanySchema,
-  getDogsByCompanySchema
+  getDogsByCompanySchema,
+  createPostSchema,
+  getAllPostsSchema,
+  getPostByIdSchema,
+  deletePostSchema,
+  getPostsByCompanySchema
 }

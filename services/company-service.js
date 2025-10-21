@@ -7,6 +7,7 @@ const {isEmailAvailable} = require('../utils/emailAvailabilty');
 
 const {sequelizeError} = require('../errors/sequelizeError');
 const companyErrors = require('../errors/companyErrors');
+const dogErrors = require('../errors/dogErrors');
 
 const companyModel = require('../models/company-model');
 
@@ -14,6 +15,7 @@ const addressService = require('./address-service');
 const phoneNumberService = require('./phoneNumber-service');
 const companyPhoneNumberService = require('./companyPhoneNumber-service');
 const dogService = require('./dog-service');
+const postService = require('./post-service');
 
 const createCompany = async function (body) {
   const transaction = await sequelize.transaction();
@@ -204,6 +206,90 @@ const getDogsByCompany = async function (uuid) {
   );
 };
 
+const createPost = async function (body) {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const dogsByCompany = await getDogsByCompany(body.companyUuid);
+
+    if (dogsByCompany instanceof ResponseFactory) return dogsByCompany;
+
+    const dog = dogsByCompany.data.find(dog => dog.uuid === body.dogUuid);
+
+    if (!dog) return dogErrors.dogNotFoundError(body.dogUuid);
+
+    const post = await postService.createPost(body, transaction)
+      .catch(err => sequelizeError(err));
+
+    await transaction.commit();
+
+    return new ResponseFactory().createSuccess(
+      'Post created successfully',
+      post,
+      200
+    );
+  } catch (err) {
+    await transaction.rollback();
+
+    return sequelizeError(err);
+  }
+};
+
+const getAllPosts = async function (limit, page) {
+  limit = parseInt(limit) || 15;
+  page = parseInt(page) || 1;
+
+  const posts = await postService.getAllPosts(limit, page)
+    .catch(err => sequelizeError(err));
+
+  return new ResponseFactory().createSuccess(
+    posts.length === 0 ? 'No posts found for this page.' : 'Posts retrieved successfully.',
+    {posts: posts || {}, meta: posts.meta},
+    200
+  );
+}
+
+const getPostById = async function (uuid) {
+  const post = await postService.getPostById(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (!post) return new ResponseFactory().createError(404, 'Post not found.', {});
+
+  return new ResponseFactory().createSuccess(
+    'Post retrieved successfully',
+    post,
+    200
+  )
+};
+
+const deletePost = async function (uuid) {
+  const post = await postService.deletePost(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (!post) return new ResponseFactory().createError(404, 'Post not found.', {});
+
+  return new ResponseFactory().createSuccess(
+    'Post deleted successfully',
+    post,
+    200
+  );
+};
+
+const getPostsByCompany = async function (uuid) {
+  const posts = await postService.getPostsByCompany(uuid)
+    .catch(err => sequelizeError(err));
+
+  if (posts instanceof ResponseFactory) return new ResponseFactory().createError(404, 'Posts not found.', {});
+
+  return new ResponseFactory().createSuccess(
+    'Posts retrieved successfully',
+    posts,
+    200
+  );
+};
+
+// getAllPostsByCompany
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -212,5 +298,10 @@ module.exports = {
   updateCompanyPassword,
   deleteCompany,
   reactivateCompany,
-  getDogsByCompany
+  getDogsByCompany,
+  createPost,
+  getAllPosts,
+  getPostById,
+  deletePost,
+  getPostsByCompany
 };

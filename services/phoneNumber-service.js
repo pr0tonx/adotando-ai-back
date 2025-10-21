@@ -14,6 +14,7 @@ const createPhoneNumber = async function (body, transaction) {
 const updatePhoneNumber = async function (body, transaction) {
   const phoneNumberIndex = body.currentPhoneNumber.map(v => v.uuid).indexOf(body.newPhoneNumber.uuid);
 
+  // todo incluir erro de phoneNumber uuid not found
   if (phoneNumberIndex === -1) return {};
 
   const changes = getChangedFields(body.currentPhoneNumber[phoneNumberIndex], body.newPhoneNumber,

@@ -103,6 +103,51 @@ const getDogsByCompany = async function (req, res) {
   res.status(response.status || 200).send(response);
 };
 
+const createPost = async function (req, res) {
+  const body = {
+    companyUuid: req.params.uuid,
+    description: req.body.description,
+    dogUuid: req.body.dogUuid
+  };
+
+  const response = await companyService.createPost(body);
+
+  res.status(response.status || 200).send(response);
+};
+
+const getAllPosts = async function (req, res) {
+  const limit = req.query.limit;
+  const page = req.query.page;
+
+  const response = await companyService.getAllPosts(limit, page);
+
+  res.status(response.status || 200).send(response);
+};
+
+const getPostById = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.getPostById(uuid);
+
+  res.status(response.status || 200).send(response);
+};
+
+const deletePost = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.deletePost(uuid);
+
+  res.status(response.status || 200).send(response);
+};
+
+const getPostsByCompany = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.getPostsByCompany(uuid);
+
+  res.status(response.status || 200).send(response);
+}
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -111,5 +156,10 @@ module.exports = {
   updateCompanyPassword,
   deleteCompany,
   reactivateCompany,
-  getDogsByCompany
+  getDogsByCompany,
+  createPost,
+  getAllPosts,
+  getPostById,
+  deletePost,
+  getPostsByCompany
 }
