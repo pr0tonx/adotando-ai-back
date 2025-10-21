@@ -115,6 +115,14 @@ const createPost = async function (req, res) {
   res.status(response.status || 200).send(response);
 };
 
+const getAllPosts = async function (req, res) {
+  const {uuid} = req.params;
+
+  const response = await companyService.getAllPosts(uuid);
+
+  res.status(response.status || 200).send(response);
+}
+
 module.exports = {
   createCompany,
   getAllCompanies,
@@ -124,5 +132,6 @@ module.exports = {
   deleteCompany,
   reactivateCompany,
   getDogsByCompany,
-  createPost
+  createPost,
+  getAllPosts
 }

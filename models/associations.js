@@ -22,7 +22,7 @@ PhoneNumber.belongsToMany(Company, {through: 'companyPhoneNumber'});
 Image.belongsTo(Dog, {as: 'images', foreignKey: 'dogUuid'});
 Dog.hasMany(Image, {});
 
-Post.belongsTo(Company, {as: 'posts'});
+Post.belongsTo(Company, {as: 'company'});
 Company.hasMany(Post, {});
 
 Post.belongsTo(Dog);

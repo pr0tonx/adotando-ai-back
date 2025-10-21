@@ -235,9 +235,26 @@ const createPost = async function (body) {
   }
 };
 
+const getAllPosts = async function (limit, page) {
+  limit = parseInt(limit) || 15;
+  page = parseInt(page) || 1;
+
+  const posts = await postService.getAllPosts(limit, page)
+    .catch(err => sequelizeError(err));
+
+  return new ResponseFactory().createSuccess(
+    posts.length === 0 ? 'No posts found for this page.' : 'Posts retrieved successfully.',
+    {posts: posts || {}, meta: posts.meta},
+    200
+  );
+}
+
+
+
 // getAllPost
 // getPostById
 // deletePost
+// getAllPostsByCompany
 
 module.exports = {
   createCompany,
@@ -248,5 +265,6 @@ module.exports = {
   deleteCompany,
   reactivateCompany,
   getDogsByCompany,
-  createPost
+  createPost,
+  getAllPosts
 };
